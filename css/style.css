@@ -54,22 +54,38 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:
 @keyframes modein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .mode-wrap{
   display:flex;flex-direction:column;align-items:center;
-  gap:clamp(14px,3vh,28px);padding:20px;
+  gap:clamp(16px,3.5vh,36px);padding:20px;
 }
-.mode-cards{display:flex;gap:clamp(12px,3vw,24px);flex-wrap:wrap;justify-content:center}
+.mode-cards{display:flex;gap:clamp(18px,4vw,40px);flex-wrap:wrap;justify-content:center;align-items:stretch}
 .mode-btn{
   font-family:'Press Start 2P',monospace;
-  width:clamp(110px,22vw,155px);
-  padding:clamp(10px,2.5vh,18px) 10px;
+  width:clamp(160px,28vw,240px);
+  padding:clamp(20px,4.5vh,38px) clamp(14px,2.5vw,22px);
   background:rgba(0,0,0,.88);
   border:none;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  box-shadow:5px 5px 0 #000;
-  transition:transform .1s,box-shadow .1s;
+  display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.5vh,14px);
+  box-shadow:6px 6px 0 #000;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s,filter .18s;
   -webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
 }
-.mode-btn:hover{filter:brightness(1.18)}
-.mode-btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 #000}
+.mode-btn::before{
+  content:'';position:absolute;inset:0;opacity:0;
+  transition:opacity .2s;
+}
+.mode-btn.solo::before{background:radial-gradient(ellipse at 50% 0%,#00ff8811 0%,transparent 70%)}
+.mode-btn.chaos::before{background:radial-gradient(ellipse at 50% 0%,#ff660018 0%,transparent 70%)}
+.mode-btn:hover::before{opacity:1}
+.mode-btn:hover{transform:translateY(-6px) scale(1.03)}
+.mode-btn.solo:hover{
+  box-shadow:6px 6px 0 #000,0 0 28px #00ff8855,0 0 56px #00ff8822;
+  filter:brightness(1.15);
+}
+.mode-btn.chaos:hover{
+  box-shadow:6px 6px 0 #000,0 0 28px #ff660055,0 0 56px #ff660022;
+  filter:brightness(1.15);
+}
+.mode-btn:active{transform:translate(3px,3px) scale(.98);box-shadow:2px 2px 0 #000}
 .mode-btn.solo{
   border-top:3px solid #00ff88;border-left:3px solid #00ff88;
   border-bottom:3px solid #006622;border-right:3px solid #006622;
@@ -77,22 +93,77 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:
 .mode-btn.chaos{
   border-top:3px solid #ff6600;border-left:3px solid #ff6600;
   border-bottom:3px solid #661100;border-right:3px solid #661100;
+  background:rgba(12,2,0,.92);
 }
 .mode-btn-icon{
   font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',system-ui,sans-serif;
-  font-size:clamp(1.6rem,5vw,2.4rem);line-height:1;
+  font-size:clamp(2.8rem,8vw,4.2rem);line-height:1;
+  filter:drop-shadow(0 0 8px currentColor);
+  transition:transform .2s,filter .2s;
 }
+.mode-btn:hover .mode-btn-icon{transform:scale(1.12)}
 .mode-btn-name{
-  font-size:clamp(.7rem,2.2vw,1rem);
-  letter-spacing:.12em;
+  font-size:clamp(.85rem,2.6vw,1.2rem);
+  letter-spacing:.15em;
   text-shadow:2px 2px 0 #000;
 }
-.mode-btn.solo  .mode-btn-name{color:#00ff88}
-.mode-btn.chaos .mode-btn-name{color:#ff6600}
+.mode-btn.solo  .mode-btn-name{color:#00ff88;text-shadow:0 0 12px #00ff8866,2px 2px 0 #000}
+.mode-btn.chaos .mode-btn-name{color:#ff6600;text-shadow:0 0 12px #ff660066,2px 2px 0 #000}
 .mode-btn-desc{
   font-size:clamp(.28rem,.9vw,.4rem);
-  color:#8899aa;line-height:2;
+  color:#8899aa;line-height:2.2;
   text-shadow:1px 1px 0 #000;
+}
+
+/* ── Mode select animation ── */
+.mode-btn.mode-selecting{pointer-events:none}
+.mode-btn.solo.mode-selecting{animation:mode-sel-solo .52s cubic-bezier(.22,.61,.36,1) forwards}
+.mode-btn.chaos.mode-selecting{animation:mode-sel-chaos .52s cubic-bezier(.22,.61,.36,1) forwards}
+@keyframes mode-sel-solo{
+  0%{transform:scale(1);box-shadow:6px 6px 0 #000}
+  28%{transform:scale(1.13);box-shadow:0 0 0 5px #00ff88,0 0 60px #00ff88bb,0 0 120px #00ff8833}
+  55%{transform:scale(1.07)}
+  100%{transform:scale(1.09);opacity:.7}
+}
+@keyframes mode-sel-chaos{
+  0%{transform:scale(1);box-shadow:6px 6px 0 #000}
+  28%{transform:scale(1.13);box-shadow:0 0 0 5px #ff6600,0 0 60px #ff6600bb,0 0 120px #ff660033}
+  55%{transform:scale(1.07)}
+  100%{transform:scale(1.09);opacity:.7}
+}
+
+/* ── Mode overlay exit ── */
+#mode-overlay.mode-exit{animation:mode-ovl-exit .48s ease-in forwards;pointer-events:none}
+@keyframes mode-ovl-exit{
+  0%{opacity:1;transform:scale(1)}
+  60%{opacity:.6;transform:scale(1.025)}
+  100%{opacity:0;transform:scale(1.05)}
+}
+
+/* ── Full-screen color flash ── */
+#mode-flash-overlay{
+  position:fixed;inset:0;z-index:9997;pointer-events:none;opacity:0;
+}
+#mode-flash-overlay.flash-active{animation:mode-flash .58s ease-out forwards}
+@keyframes mode-flash{
+  0%{opacity:0}20%{opacity:.55}100%{opacity:0}
+}
+
+/* ── Chaos two-column lobby layout ── */
+.lc.chaos-layout .lc-right{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-areas:'name name' 'mp boats' 'mp cast';
+  gap:10px 20px;
+  align-items:start;
+}
+.lc.chaos-layout .lc-right .input-wrap{grid-area:name}
+.lc.chaos-layout .lc-right #mp-panel{grid-area:mp;margin-bottom:0;height:100%}
+.lc.chaos-layout .lc-right .boat-picker-wrap{grid-area:boats}
+.lc.chaos-layout .lc-right #bst{grid-area:cast}
+.lc.chaos-layout{grid-template-columns:1fr!important}
+@media(max-width:600px){
+  .lc.chaos-layout .lc-right{grid-template-columns:1fr;grid-template-areas:'name' 'mp' 'boats' 'cast'}
 }
 /* Back button + mode badge in lobby */
 .back-btn{

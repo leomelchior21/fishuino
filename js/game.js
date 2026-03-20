@@ -2178,11 +2178,29 @@ function generateEndlessPhase(phaseIdx){
 /* ---- helpers ---- */
 function _showOverlay(id,show){const el=document.getElementById(id);if(el)el.style.display=show?'flex':'none';}
 
+function _animateModeSelect(btnEl,flashColor,cb){
+  btnEl.classList.add('mode-selecting');
+  const fl=document.getElementById('mode-flash-overlay');
+  const ov=document.getElementById('mode-overlay');
+  if(fl){fl.style.background=flashColor;fl.classList.add('flash-active');}
+  setTimeout(()=>{if(ov)ov.classList.add('mode-exit');},180);
+  setTimeout(()=>{
+    btnEl.classList.remove('mode-selecting');
+    if(fl)fl.classList.remove('flash-active');
+    if(ov)ov.classList.remove('mode-exit');
+    cb();
+  },520);
+}
+
 function chooseSolo(){
-  _gameMode='solo';_endless=false;_makerGod=false;
-  _showOverlay('mode-overlay',false);
-  _showOverlay('diff-overlay',true);
-  _showOverlay('lc',false);
+  const btn=document.querySelector('.mode-btn.solo');
+  _animateModeSelect(btn,'rgba(0,255,136,0.28)',()=>{
+    _gameMode='solo';_endless=false;_makerGod=false;
+    _showOverlay('mode-overlay',false);
+    _showOverlay('diff-overlay',true);
+    _showOverlay('lc',false);
+    document.getElementById('lc').classList.remove('chaos-layout');
+  });
 }
 function pickDifficulty(d){
   _makerGod=d==='god';
@@ -2200,6 +2218,7 @@ function diffBack(){
   _showOverlay('mode-overlay',true);
 }
 function lcBack(){
+  document.getElementById('lc').classList.remove('chaos-layout');
   _showOverlay('lc',false);
   if(_gameMode==='solo'&&!_endless){_showOverlay('diff-overlay',true);}
   else{_showOverlay('mode-overlay',true);}
@@ -2216,16 +2235,22 @@ function chooseMulti(){
   _showOverlay('lc',true);
 }
 function chooseChaos(){
-  _gameMode='chaos';_endless=false;
-  _showOverlay('mode-overlay',false);
-  document.getElementById('mp-panel').style.display='';
-  document.getElementById('bst').style.display='none';
-  document.getElementById('nh2').style.display='none';
-  document.getElementById('lc-mode-badge').textContent='🔥 CHAOS';
-  document.getElementById('lc-mode-badge').style.color='#ff6600';
-  if(typeof MP!=='undefined')MP.initChaos();
-  const lcLeft=document.querySelector('.lc-left');if(lcLeft)lcLeft.style.display='none';
-  _showOverlay('lc',true);
+  const btn=document.querySelector('.mode-btn.chaos');
+  _animateModeSelect(btn,'rgba(255,102,0,0.32)',()=>{
+    _gameMode='chaos';_endless=false;
+    _showOverlay('mode-overlay',false);
+    document.getElementById('mp-panel').style.display='';
+    const titleEl=document.querySelector('.mp-panel-title');
+    if(titleEl)titleEl.textContent='🔥 CHAOS FISHING — MULTIPLAYER';
+    document.getElementById('bst').style.display='none';
+    document.getElementById('nh2').style.display='none';
+    document.getElementById('lc-mode-badge').textContent='🔥 CHAOS';
+    document.getElementById('lc-mode-badge').style.color='#ff6600';
+    if(typeof MP!=='undefined')MP.initChaos();
+    const lcLeft=document.querySelector('.lc-left');if(lcLeft)lcLeft.style.display='none';
+    document.getElementById('lc').classList.add('chaos-layout');
+    _showOverlay('lc',true);
+  });
 }
 function chooseEndless(){
   _gameMode='solo';_endless=true;
@@ -2240,6 +2265,7 @@ function chooseEndless(){
 function chooseBack(){
   _gameMode='solo';_endless=false;_makerGod=false;
   if(typeof MP!=='undefined'&&MP.active)MP.reset();
+  document.getElementById('lc').classList.remove('chaos-layout');
   _showOverlay('lc',false);
   _showOverlay('diff-overlay',false);
   _showOverlay('mode-overlay',true);
