@@ -150,20 +150,46 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:
 }
 
 /* ── Chaos two-column lobby layout ── */
+/* ── Chaos lobby: collapse lc-panels to 1 col so lc-right gets full width ── */
+.lc.chaos-layout .lc-panels{
+  grid-template-columns:1fr;
+  justify-items:center;
+}
+/* ── lc-right becomes its own 2-col sub-grid ── */
 .lc.chaos-layout .lc-right{
+  width:100%;max-width:920px;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  grid-template-areas:'name name' 'mp boats' 'mp cast';
-  gap:10px 20px;
+  grid-template-columns:minmax(250px,36%) 1fr;
+  grid-template-areas:'name name' 'mp boats';
+  gap:14px 30px;
   align-items:start;
 }
 .lc.chaos-layout .lc-right .input-wrap{grid-area:name}
-.lc.chaos-layout .lc-right #mp-panel{grid-area:mp;margin-bottom:0;height:100%}
+.lc.chaos-layout .lc-right #mp-panel{grid-area:mp;margin-bottom:0}
 .lc.chaos-layout .lc-right .boat-picker-wrap{grid-area:boats}
-.lc.chaos-layout .lc-right #bst{grid-area:cast}
-.lc.chaos-layout{grid-template-columns:1fr!important}
+.lc.chaos-layout .lc-right #bst{display:none!important}
+/* Fix button/title text wrapping inside the narrower mp col */
+.lc.chaos-layout .lc-right .pixel-btn{
+  font-size:clamp(.26rem,.78vw,.4rem);
+  white-space:nowrap;letter-spacing:.07em;
+}
+.lc.chaos-layout .lc-right .mp-panel-title{
+  font-size:clamp(.3rem,.85vw,.42rem);
+  white-space:nowrap;letter-spacing:.12em;
+}
+/* Mobile: stack */
 @media(max-width:600px){
-  .lc.chaos-layout .lc-right{grid-template-columns:1fr;grid-template-areas:'name' 'mp' 'boats' 'cast'}
+  .lc.chaos-layout .lc-right{
+    grid-template-columns:1fr;
+    grid-template-areas:'name' 'mp' 'boats';
+  }
+}
+/* Center name input + label in chaos full-width row */
+.lc.chaos-layout .lc-right .input-wrap{
+  display:flex;flex-direction:column;align-items:center;
+}
+.lc.chaos-layout .lc-right .input-wrap .pixel-input{
+  width:100%;max-width:480px;text-align:center;
 }
 /* Back button + mode badge in lobby */
 .back-btn{
