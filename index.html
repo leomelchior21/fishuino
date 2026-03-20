@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Fishuino</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- LOBBY -->
+<div id="lobby" class="screen active">
+  <canvas id="lobby-canvas"></canvas>
+
+  <!-- MODE SELECTION — shown first, fades when a mode is picked -->
+  <div id="mode-overlay">
+    <div class="mode-wrap">
+      <div class="game-title">FISHUINO</div>
+      <div class="sub-title">CATCH &amp; CIRCUIT</div>
+      <div class="mode-cards">
+        <button class="mode-btn solo" onclick="chooseSolo()">
+          <div class="mode-btn-icon">🎣</div>
+          <div class="mode-btn-name">SOLO</div>
+          <div class="mode-btn-desc">learn circuits<br>at your own pace</div>
+        </button>
+        <button class="mode-btn chaos" onclick="chooseChaos()">
+          <div class="mode-btn-icon">🔥</div>
+          <div class="mode-btn-name">CHAOS</div>
+          <div class="mode-btn-desc">shared waters<br>pure mayhem</div>
+        </button>
+      </div>
+      <p class="lobby-footer">DESIGNED WITH LOVE BY LEO MAKER</p>
+    </div>
+  </div>
+
+  <!-- DIFFICULTY SELECTION (solo only) -->
+  <div id="diff-overlay" style="display:none">
+    <div class="diff-ov-inner">
+      <div style="width:100%;margin-bottom:10px">
+        <button class="back-btn" onclick="diffBack()">◀ BACK</button>
+      </div>
+      <div style="text-align:center;margin-bottom:clamp(12px,2.5vw,28px)">
+        <div class="game-title">FISHUINO</div>
+        <div class="sub-title">CATCH &amp; CIRCUIT</div>
+        <p class="diff-ov-question">how brave are you?</p>
+      </div>
+      <div class="diff-ov-cards">
+        <button class="dcard" onclick="pickDifficulty('meh')">
+          <div class="dcard-emoji">🐟</div>
+          <div class="dcard-name">STARTER</div>
+          <div class="dcard-tag">BEGINNER FRIENDLY</div>
+          <div class="dcard-desc">Catch the exact components shown on screen.<br>Icons and labels guide every catch.</div>
+        </button>
+        <button class="dcard god" onclick="pickDifficulty('god')">
+          <div class="dcard-emoji">⚡</div>
+          <div class="dcard-name">MAKER GOD</div>
+          <div class="dcard-tag">USE YOUR KNOWLEDGE</div>
+          <div class="dcard-desc">Any valid component satisfies each slot.<br>You decide which LED, pin, or PWM to use.</div>
+        </button>
+      </div>
+      <p class="lobby-footer" style="margin-top:clamp(16px,3vw,32px)">DESIGNED WITH LOVE BY LEO MAKER</p>
+    </div>
+  </div>
+
+  <div class="lc" id="lc" style="display:none">
+
+    <!-- ── TOP BAR ── -->
+    <div class="lc-topbar">
+      <button class="back-btn" onclick="lcBack()">◀ BACK</button>
+      <div class="lc-title-block">
+        <div class="game-title">FISHUINO</div>
+        <div class="sub-title">CATCH &amp; CIRCUIT</div>
+      </div>
+      <div id="lc-mode-badge" class="lc-mode-badge"></div>
+    </div>
+
+    <!-- ── TWO PANELS ── -->
+    <div class="lc-panels">
+
+      <!-- LEFT — Leaderboard -->
+      <div class="lc-panel lc-left">
+        <div class="lc-panel-heading">🌐 GLOBAL LEADERBOARD</div>
+        <div class="glb-tabs">
+          <button id="glb-tab-meh" class="glb-tab glb-tab-active" onclick="SB.showTab('meh')">🐟 STARTER</button>
+          <button id="glb-tab-god" class="glb-tab" onclick="SB.showTab('god')">⚡ MAKER GOD</button>
+        </div>
+        <div id="glb-body-meh" class="glb-body"><div class="glb-loading">⚡ Loading…</div></div>
+        <div id="glb-body-god" class="glb-body" style="display:none"><div class="glb-loading">⚡ Loading…</div></div>
+
+        <div id="session-scores" style="display:none;margin-top:20px">
+          <div class="lc-panel-heading">⚡ SESSION SCORES</div>
+          <div id="ss-body"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT — Name + Boats -->
+      <div class="lc-panel lc-right">
+        <div class="input-wrap">
+          <label class="input-label" for="pin">▸ YOUR NAME, FISHERMAN</label>
+          <input id="pin" class="pixel-input" type="text" placeholder="enter name..." maxlength="20" autocomplete="off" spellcheck="false" oninput="nc()" onkeyup="nc()">
+          <p id="nh2" class="name-hint">type your name to begin</p>
+        </div>
+
+        <!-- MULTIPLAYER PANEL -->
+        <div id="mp-panel" class="mp-panel">
+          <div class="mp-panel-title">⚡ CIRCUIT RACE — MULTIPLAYER</div>
+          <div class="mp-tabs">
+            <button class="mp-tab active" data-tab="create" onclick="mpTab('create')">▸ CREATE</button>
+            <button class="mp-tab"        data-tab="join"   onclick="mpTab('join')">▸ JOIN</button>
+          </div>
+          <div id="mp-tab-create">
+            <button class="pixel-btn full" onclick="MP.createRoom()">▸ CREATE ROOM</button>
+            <div id="mp-code-box" class="mp-code-box" style="display:none">
+              <div class="mp-code-label">ROOM CODE</div>
+              <div id="mp-code-val" class="mp-code-val">----</div>
+              <div class="mp-code-hint">share with your students</div>
+            </div>
+            <div id="mp-plist" class="mp-plist"></div>
+            <button id="mp-start-btn" class="pixel-btn full" style="display:none;margin-top:8px" disabled onclick="MP.startRace()">▸ START RACE!</button>
+          </div>
+          <div id="mp-tab-join" style="display:none">
+            <input id="mp-join-input" class="pixel-input" type="text" placeholder="ABCD" maxlength="4"
+                   oninput="this.value=this.value.toUpperCase()" style="letter-spacing:.4em;text-align:center">
+            <button class="pixel-btn full" style="margin-top:8px" onclick="MP.joinRoom()">▸ JOIN ROOM</button>
+            <div id="mp-waiting" class="mp-waiting" style="display:none">⏳ waiting for host to start…</div>
+          </div>
+          <div id="mp-status" class="mp-status"></div>
+        </div>
+
+        <!-- BOAT PICKER -->
+        <div class="boat-picker-wrap">
+          <div class="boat-picker-title">▸ CHOOSE YOUR VESSEL</div>
+          <div class="boat-cards" id="boat-cards"></div>
+        </div>
+
+        <button id="bst" class="pixel-btn full" disabled onclick="startGame()">▸ CAST OFF!</button>
+      </div>
+    </div>
+
+    <p class="lobby-footer">DESIGNED WITH LOVE BY LEO MAKER</p>
+  </div>
+</div>
+
+<!-- BRIEFING — horizontal banner layout -->
+<div id="brf" class="mo h">
+  <div class="mb3 bb">
+
+    <!-- Header row -->
+    <div class="brf-header">
+      <span class="bbg">MISSION BRIEF</span>
+      <span id="bpn2" class="bpn">LEVEL 1 OF 10</span>
+    </div>
+
+    <!-- Icon + Title -->
+    <div class="brf-title-row">
+      <div class="bic2" id="bico">💡</div>
+      <h2 id="btit"></h2>
+    </div>
+
+    <!-- Description -->
+    <p id="bdsc" class="brf-desc"></p>
+
+    <!-- Two-column: Catch These | Avoid + Time -->
+    <div class="brf-grid">
+      <div class="brf-col">
+        <div class="bsl">🎯 CATCH THESE</div>
+        <div id="btgs" class="bt"></div>
+      </div>
+      <div class="brf-col">
+        <div class="bsl">🚫 AVOID</div>
+        <p class="bav">Old boots, rusty cans, tires — each costs a life!</p>
+        <div class="btime" id="btime-row">⏱ <span id="btime-val">TIME LIMIT: --s</span><br>🏃 Fast finish = BONUS!</div>
+      </div>
+    </div>
+
+    <!-- Controls hint -->
+    <div class="brf-footer">
+      <div class="bcr">
+        <span><strong>←→</strong> Move</span>
+        <span><strong>↑↓</strong> Hook</span>
+        <span><strong>SPACE</strong> Sonar</span>
+      </div>
+    </div>
+
+    <!-- Start button -->
+    <div class="brf-actions">
+      <button class="pixel-btn full" onclick="launchPhase()">▸ START FISHING</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="gs" class="screen">
+
+  <!-- HUD — always two-row, 50% bigger -->
+  <div id="hud">
+    <div class="hud-main-col">
+      <!-- Row 1: phase name, requirements, score, timer, hearts, level -->
+      <div class="hud-row1">
+        <span id="hpn">---</span>
+        <div class="hdiv"></div>
+        <div id="hreq"></div>
+        <div class="hdiv"></div>
+        <div class="hsc-wrap">
+          <div class="hlb">SCORE</div>
+          <div id="hsc">0</div>
+        </div>
+        <div class="hdiv"></div>
+        <div class="htimer-wrap">
+          <div class="hlb">TIME</div>
+          <div id="htimer">--</div>
+        </div>
+        <div class="hdiv"></div>
+        <div id="hlv"></div>
+        <div class="hdiv"></div>
+        <div class="hlvl-wrap">
+          <div class="hlb">LVL</div>
+          <div id="hln">1/10</div>
+        </div>
+      </div>
+      <!-- Row 2: sonar status + alert -->
+      <div class="hud-row2">
+        <div class="sonar-wrap" onclick="triggerSonar()">
+          <div class="hlb">SONAR</div>
+          <div id="hsonar">READY</div>
+        </div>
+        <div class="hdiv"></div>
+        <div id="hpow" class="hpow-wrap" style="display:none"></div>
+        <div class="hdiv"></div>
+        <div id="hud-alert"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RACE TOP-5 BAR (under HUD, single line) -->
+  <div id="race-bar"><div id="race-bar-body"></div></div>
+
+  <canvas id="gc"></canvas>
+
+  <!-- COUNTDOWN 3-2-1 -->
+  <div id="countdown-overlay" class="h">
+    <div id="countdown-num">3</div>
+  </div>
+
+  <!-- MULTIPLAYER LEADERBOARD SIDEBAR -->
+  <div id="mp-leaderboard" style="display:none">
+    <div class="mp-lb-title">⚡ RACE</div>
+    <div id="mp-lb-body"></div>
+  </div>
+
+  <!-- MOBILE D-PAD CONTROLS -->
+  <div id="mc">
+    <!-- LEFT D-PAD -->
+    <div class="dpad" id="dpad-left">
+      <div class="dpad-gap"></div>
+      <button class="db up"    id="dl-u" data-dir="u">▲</button>
+      <div class="dpad-gap"></div>
+      <button class="db left"  id="dl-l" data-dir="l">◀</button>
+      <div class="db center-dot">✦</div>
+      <button class="db right" id="dl-r" data-dir="r">▶</button>
+      <div class="dpad-gap"></div>
+      <button class="db down"  id="dl-d" data-dir="d">▼</button>
+      <div class="dpad-gap"></div>
+    </div>
+
+    <!-- CENTER: SCAN button — elongated rounded rectangle -->
+    <div class="mc-center">
+      <button id="btn-sonar-mob" onclick="triggerSonar()">
+        <span class="scan-icon">📡</span>SCAN
+      </button>
+    </div>
+
+    <!-- RIGHT D-PAD -->
+    <div class="dpad" id="dpad-right">
+      <div class="dpad-gap"></div>
+      <button class="db up"    id="dr-u" data-dir="u">▲</button>
+      <div class="dpad-gap"></div>
+      <button class="db left"  id="dr-l" data-dir="l">◀</button>
+      <div class="db center-dot">✦</div>
+      <button class="db right" id="dr-r" data-dir="r">▶</button>
+      <div class="dpad-gap"></div>
+      <button class="db down"  id="dr-d" data-dir="d">▼</button>
+      <div class="dpad-gap"></div>
+    </div>
+  </div>
+
+  <div id="cf"></div>
+
+  <!-- CIRCUIT PREVIEW OVERLAY -->
+  <div id="circuit-preview" class="mo h">
+    <div class="cp-box">
+      <div class="cp-title">⚡ CIRCUIT COMPLETE!</div>
+      <canvas id="circuit-preview-canvas"></canvas>
+      <p class="cp-hint">wiring diagram</p>
+    </div>
+  </div>
+
+  <!-- RACE: waiting for round to end -->
+  <div id="race-waiting" class="mo h">
+    <div class="mb3">
+      <div class="mic" id="rw-icon">⏳</div>
+      <h2 id="rw-title">WAITING…</h2>
+      <p id="rw-msg"></p>
+      <div id="rw-board" class="rre-ranks"></div>
+    </div>
+  </div>
+
+  <!-- RACE: round end results + ready button -->
+  <div id="race-round-end" class="mo h">
+    <div class="mb3">
+      <div id="rre-winner-banner" class="rre-winner-banner" style="display:none"></div>
+      <div class="fishing-anim">🎣</div>
+      <h2 id="rre-title">ROUND COMPLETE!</h2>
+      <div id="rre-ranks" class="rre-ranks"></div>
+      <button class="pixel-btn full" id="rre-ready-btn" onclick="MP.sendReady()">✓ READY FOR NEXT ROUND</button>
+      <button class="pixel-btn full" id="rre-host-start-btn" style="display:none" onclick="MP.hostStartNext()">▸ START NEXT LEVEL</button>
+      <p id="rre-waiting-msg" style="display:none;font-size:.3rem;color:#667788">waiting for all players…</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAUSE OVERLAY -->
+<div id="pause-overlay">
+  <div class="pause-box">
+    <div style="font-size:3rem;animation:icon-pop .4s cubic-bezier(.34,1.56,.64,1)">⏸</div>
+    <div class="pause-title">PAUSED</div>
+    <p class="pause-info">Level <span id="pause-lvl">1</span> of 10<br>Score: <span id="pause-score">0</span><br>Time left: <span id="pause-time">--</span>s</p>
+    <button class="pixel-btn full" onclick="togglePause()">▸ RESUME</button>
+    <button class="pixel-btn full blue" onclick="goHome()" style="margin-top:4px">🏠 MAIN MENU</button>
+  </div>
+</div>
+
+<!-- LEVEL COMPLETE -->
+<div id="mlv" class="mo h">
+  <div class="mb3">
+    <div class="mic">⚡</div>
+    <h2 id="mlt">CIRCUIT COMPLETE!</h2>
+    <p id="mld"></p>
+    <div id="mcp"></div>
+    <p class="mt2" id="mtp"></p>
+    <div class="score-detail" id="lvl-score-detail"></div>
+    <button class="pixel-btn full" onclick="nextPhase()">▸ NEXT CIRCUIT</button>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="mgo" class="mo h">
+  <div class="mb3">
+    <div class="mic">💀</div>
+    <h2>GAME OVER</h2>
+    <p id="gom">Watch out for trash!</p>
+    <div class="go-score-label">FINAL SCORE</div>
+    <div class="gs2"><span id="gov">0</span></div>
+    <div class="score-detail" id="go-score-detail"></div>
+    <div style="display:flex;gap:8px;width:100%;margin-top:4px">
+      <button class="pixel-btn full" onclick="restartGame()">▸ TRY AGAIN</button>
+      <button class="pixel-btn full blue" onclick="goHome()">🏠 MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- WIN / MASTER CAT -->
+<div id="mwn" class="mo h">
+  <div class="mb3">
+    <div class="confetti-row">🎉⚡🐱⚡🎉</div>
+    <div class="master-art">🐱</div>
+    <div class="master-title">MASTER CAT<br>OF THE ARDUINO</div>
+    <p id="wm" class="master-invite">All 10 circuits built!<br>You defeated Big Cat Brian.</p>
+    <div class="win-score-grid">
+      <div class="wsg-item"><div class="wsg-label">SCORE</div><div class="wsg-val" id="wv">0</div></div>
+      <div class="wsg-item"><div class="wsg-label">BONUS</div><div class="wsg-val" id="wbonus" style="color:#00ff88">+0</div></div>
+      <div class="wsg-item"><div class="wsg-label">LEVELS</div><div class="wsg-val">10/10 ✓</div></div>
+      <div class="wsg-item"><div class="wsg-label">TIME</div><div class="wsg-val" id="wtotal">--s</div></div>
+    </div>
+    <p style="font-size:clamp(.38rem,1.1vw,.5rem);color:#ffd70099;line-height:2">⭐ PURR-FECT ARDUINO SKILLS ⭐</p>
+    <div style="display:flex;gap:8px;width:100%;margin-top:4px">
+      <button class="pixel-btn full" onclick="restartGame()">▸ PLAY AGAIN</button>
+      <button class="pixel-btn full blue" onclick="goHome()">🏠 MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENT TOAST -->
+<div id="achiev-toast" class="hidden">
+  <div class="ach-icon-wrap" id="ach-icon-cell"></div>
+  <div class="ach-text-wrap" id="ach-text-cell"></div>
+</div>
+
+<!-- TEACHING MOMENT POPUP -->
+<div id="teach-popup" class="hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/multiplayer.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
